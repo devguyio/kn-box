@@ -15,11 +15,10 @@ else
   reset=''
 fi
 
-serving_version="v0.13.0"
-eventing_version="v0.13.1"
-kourier_version="v0.3.10"
+serving_version="v0.13.2"
+eventing_version="v0.13.6"
 istio_version="1.4.4"
-kube_version="v1.17.3"
+kube_version="v1.17.4"
 
 MEMORY="$(minikube config view | awk '/memory/ { print $3 }')"
 CPUS="$(minikube config view | awk '/cpus/ { print $3 }')"
@@ -34,7 +33,6 @@ header_text "Starting Knative on minikube!"
 header_text "Using Kubernetes Version:               ${kube_version}"
 header_text "Using Knative Serving Version:          ${serving_version}"
 header_text "Using Knative Eventing Version:         ${eventing_version}"
-header_text "Using Kourier Version:                  ${kourier_version}"
 header_text "Using Istio Version:                    ${istio_version}"
 
 minikube start --memory="${MEMORY:-16348}" --cpus="${CPUS:-10}" --kubernetes-version="${kube_version}" --vm-driver="${DRIVER:-kvm2}" --disk-size="${DISKSIZE:-30g}" --extra-config=apiserver.enable-admission-plugins="LimitRanger,NamespaceExists,NamespaceLifecycle,ResourceQuota,ServiceAccount,DefaultStorageClass,MutatingAdmissionWebhook"
@@ -66,21 +64,6 @@ header_text "Setting up Knative Serving"
 header_text "Waiting for Knative Serving to become ready"
 sleep 5; while echo && kubectl get pods -n knative-serving | grep -v -E "(Running|Completed|STATUS)"; do sleep 5; done
 
-
-
-
-# header_text "Setting up Kourier"
-# kubectl apply -f "https://raw.githubusercontent.com/3scale/kourier/${kourier_version}/deploy/kourier-knative.yaml"
-
-# header_text "Waiting for Kourier to become ready"
-# sleep 5; while echo && kubectl get pods -n kourier-system | grep -v -E "(Running|Completed|STATUS)"; do sleep 5; done
-
-# header_text "Configure Knative Serving to use the proper 'ingress.class' from Kourier"
-# kubectl patch configmap/config-network \
-#   -n knative-serving \
-#   --type merge \
-#   -p '{"data":{"clusteringress.class":"kourier.ingress.networking.knative.dev",
-#                "ingress.class":"kourier.ingress.networking.knative.dev"}}'
 
 header_text "Setting up Knative Eventing"
 kubectl apply --filename https://github.com/knative/eventing/releases/download/${eventing_version}/eventing.yaml
